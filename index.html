@@ -245,7 +245,8 @@
       <br>
 
       <h2 class="subtitle has-text-centered">
-        <b> UniPhys </b> is a diffusion-based unified planner and controller for physics-based character control, handling diverse tasks with a single model.
+        <b> UniPhys </b> is a diffusion-based unified planner and text-driven controller for physics-based character control.
+        It generalizes across diverse tasks using a single model—from short-term reactive control tasks to long-term planning tasks, without requiring task-specific training.
       </h2>
     </div>
 </section>
@@ -311,11 +312,17 @@
     <!-- Summary -->
     <div class="columns is-centered has-text-centered">
       <div class="column is-full-width">
-        <h2 class="title is-3">Summary</h2>
+        <h2 class="title is-3">Method</h2>
         <div class="content has-text-justified">
-          <h4>Key Ideas</h4>
-          We show that the diffusion latent noise (x<sub>T</sub>) can be optimized using critertion function defined on the motion space (x<sub>0</sub>) to serve as universal motion priors for a wide range of motion-related tasks.
-
+          <h4>Key Idea</h4>
+          We're building a diffusion-based model that learns <b>both kinematic motion and physical control actions</b>, acting as a unified planner and a text-driven controller.
+          <br>
+          By directly modeling the text-conditioned action distribution, we can control a character <b>end-to-end</b> with text instructions. 
+          <br>
+          Plus, since we’re learning the full state-action distribution, we can predict future motions and apply flexible guidance during denoising to steer actions toward a desired goal.
+          <br>
+          This approach works for <b>any task</b> as long as we can design a differentiable guidance loss over the state-action space.
+          
           <!-- <figure  class="content has-text-centered">
             <img src="./static/images/guidance_problem.jpg"
                    class="column is-7 is-offset-1 has-text-centered"
@@ -323,39 +330,47 @@
                    />
           </figure > -->
           <p>
-          <h4>Casual Summary</h4>
+          <h4>Key Challenges</h4>
           <p>
-            Many papers show that in VAE or GAN, we can optimize the latent noise according to a loss in the output space to obtain a prediction that satisfies certain properties.
+            However, simply training the diffusion model with offline paired state-action data doesn’t work well—it often leads to unstable motions, with the character frequently falling.
+            <br>
+            <br>
+            What makes this challenging?
+            <br>
+            <br>
+            <span style="color: #ff0000"><b>Difficult bipedal control</b></span> – Controlling a full-body character is tough. The action space is large (69 dimensions, excluding fingers control), and even small errors can throw off balance, causing falls.
+            <br>
+            <br>
+            <span style="color: #ff0000"><b>Compounding error in behavior cloning</b></span> – Training on offline data suffers from the classic compounding error problem. As the state drifts beyond the training distribution over time, predictions become less accurate, leading to unstable and unreliable control.
 
-            Then, what about the (supposedly) richer generative space of the diffusion model? Can we optimize it the same way we do with VAE or GAN?
           </p>
 
+          <h4>Our Solutions</h4>
           <p>
-            In this paper, we show we can <b>also change the output motion by optimizing the latent diffusion noise</b>. This latent noise is very versatile as a motion prior.
+            <span style="color: #0bbe05"><b>Latent action representation</b></span> – Instead of directly learning the high-dimensional action distribution, we employ a compact latent action representation for ease of learning.
+            <br>
+            <br>
+            <span style="color: #0bbe05"><b>Injecting independant noises per frame when training</b></span> – Inspired by Diffusion Forcing, when predicting clean output from corrupted noisy input at training time, we corrupt the input sequence by injecting independant noises to each frame.
+            <br>
+            This enables flexible denoising settings and a stabilization trick to mitigate compounding error issues at inference time:
+            <br>
+            <ul>
+              <li><b>Flexible denoising settings</b> – As the model has seen various random noise configurations at training time, we can adjust noise levels at inference time. 
+                This allows for more flexible denoising schedules for the sequence beyond the standard uniform denoising schedule over a fixed-length sequence.
+                We can design custom denoising schedules and even use different lengths of past motion to predict variable-length future motions, by simpling setting different noise levels.</li>
+              <li><b>Stabilization method</b> – When generating future motions autoregressively, predictions are conditioned on previously predicted frames. 
+                However, these frames may slightly deviate from the training distribution. 
+                To prevent the model from treating them as perfect ground truth, we introduce a small amount of noise to indicate potential uncertainty. 
+                This helps mitigate compounding errors in long-horizon rollouts, leading to more stable motion generation.</li>
+            </ul>
+            <br>
           </p>
-
-          <p>
-          <b>How?</b> We unroll the ODE chain to produce the output motion, compute loss, and backpropagate the gradient through the full denoising chain to the latent noise x<sub>T</sub>.
-          We demonstrate that this process is feasible.  In addition, we do not need that many ODE steps for the optimization in the motion domain, which we can still hold in the GPU memory.
-          <br>
-          
-          This enables us to use a pre-trained motion diffusion model to handle many arbitrary motion tasks, including motion editing, in-betweening, denoising, and avoiding obstacles, by only changing the objective function during test time optimization. The model is never trained to solve any of these tasks.
-          <br>
-          </p>
-
-          <p>
-            <b> Highlights: </b> DNO is a <b>simple, versatile, and effective</b> method that can be used for many tasks.
-          </p>          
+             
           <figure  class="content has-text-centered">
-            <img src="./static/images/overview.jpg"
-                   class="column is-10 is-offset-0 has-text-centered"
+            <img src="./static/images/UniPhys-Framework.png"
+                   
+                   class="is-fullwidth"
                    alt="Method Overview."
-                   />
-          </figure >
-          <figure  class="content has-text-centered">
-            <img src="./static/images/DNO_pipeline.jpg"
-                   class="column is-6 is-offset-0 has-text-centered"
-                   alt="DNO pipeline Overview."
                    />
           </figure >
           </p>
@@ -499,7 +514,7 @@
 
     <div class="content is-centered has-text-centered">
       <h2 class="title is-4">
-        Multi-modal text-driven control
+        Multi-modal text-driven atomic skills
       </h2>
     </div>
 
