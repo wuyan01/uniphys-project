@@ -270,21 +270,6 @@
             Through guided sampling, UniPhys generalizes to a wide range of control signals, including unseen ones, without requiring task-specific fine-tuning. 
             Experiments show that UniPhys outperforms prior methods in motion naturalness, generalization, and robustness across diverse control tasks.
           </p>
-          <!-- <p>
-            We propose Diffusion Noise Optimization (DNO), a new method that effectively leverages existing motion diffusion models as motion priors for a wide range of motion-related tasks.
-          </p>
-          <p>
-            Instead of training a task-specific diffusion model for each new task, DNO operates by optimizing the diffusion latent noise of an existing pre-trained text-to-motion model.
-            Given the corresponding latent noise of a human motion, it propagates the gradient from the target criteria defined on the motion space through the whole denoising process to update the diffusion latent noise. As a result, DNO supports any use cases where criteria can be defined as a function of motion. 
-          </p>
-          <p>
-            In particular, we show that, for motion editing and control, DNO outperforms existing methods in both achieving the objective and preserving the motion content. 
-            DNO accommodates a diverse range of editing modes, including changing trajectory, pose, joint locations, or avoiding newly added obstacles.
-          </p>
-          <p>
-            In addition, DNO is effective in motion denoising and completion, producing smooth and realistic motion from noisy and partial inputs.
-            DNO achieves these results at inference time without the need for model retraining, offering great versatility for any defined reward or loss function on the motion representation.
-          </p> -->
         </div>
       </div>
     </div>
@@ -315,7 +300,7 @@
         <h2 class="title is-3">Method</h2>
         <div class="content has-text-justified">
           <h4>Key Idea</h4>
-          We're building a diffusion-based model that learns <b>both kinematic motion (state) and physical control actions (action)</b>, acting as a unified planner and a text-driven controller.
+          We're building a diffusion-based model that learns <b>both kinematic motion (state) and physical control actions (action)</b>, acting as a unified planner and text-driven controller.
           <br>
           By directly modeling the text-conditioned action distribution, we can control a character <b>end-to-end</b> with text instructions. 
           <br>
